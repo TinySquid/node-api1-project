@@ -72,14 +72,16 @@ server.post("/api/users", (req, res) => {
 });
 
 server.put("/api/users/:id", (req, res) => {
+  const id = req.params.id;
   const { name, bio } = req.body;
+
   if (name && bio) {
-    db.update(req.params.id, { name: name, bio: bio })
-      .then(id => {
-        if (id) {
-          db.findById(id)
-            .then(user => {
-              res.status(200).json(user);
+    db.findById(id)
+      .then(user => {
+        if (user) {
+          db.update(id, { name: name, bio: bio })
+            .then(() => {
+              res.status(200).json({ ...user, name: name, bio: bio });
             })
             .catch(error => {
               res.status(500).json({ error: "The user information could not be modified." });

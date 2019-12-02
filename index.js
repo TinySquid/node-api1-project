@@ -2,13 +2,13 @@
 // Ok bud :)
 
 //Bring in .env config parser
-require('dotenv').config();
+require("dotenv").config();
 //Get express module
-const express = require('express');
+const express = require("express");
 //Get CORS module
-const cors = require('cors');
+const cors = require("cors");
 //Get DB module
-const db = require('./data/db');
+const db = require("./data/db");
 
 //Create server
 const server = express();
@@ -23,32 +23,32 @@ server.use(express.json());
 server.use(cors());
 
 //Initial endpoint
-server.get('/', (req, res) => {
-  res.status(200).json({ message: 'Hello there :)' });
+server.get("/", (req, res) => {
+  res.status(200).json({ message: "Hello there :)" });
 });
 
 // GET /api/users
-server.get('/api/users', (req, res) => {
+server.get("/api/users", (req, res) => {
   db.find()
     .then(users => {
       if (users) {
         res.status(200).json(users);
       } else {
-        res.status(404).json({ message: 'There are no users in the database.' });
+        res.status(404).json({ message: "There are no users in the database." });
       }
     })
     .catch(error => {
-      res.status(500).json({ error: 'The users information could not be retrieved.' });
+      res.status(500).json({ error: "The users information could not be retrieved." });
     });
 });
 
-server.get('/api/users/:id', (req, res) => {
+server.get("/api/users/:id", (req, res) => {
   db.findById(req.params.id)
     .then(user => {
       if (user) {
         res.status(200).json(user);
       } else {
-        res.status(404).json({ message: 'The user with the specified ID does not exist.' });
+        res.status(404).json({ message: "The user with the specified ID does not exist." });
       }
     })
     .catch(error => {
@@ -56,7 +56,7 @@ server.get('/api/users/:id', (req, res) => {
     });
 });
 
-server.post('/api/users', (req, res) => {
+server.post("/api/users", (req, res) => {
   const { name, bio } = req.body;
   if (name && bio) {
     db.insert({ name: name, bio: bio })
@@ -65,6 +65,31 @@ server.post('/api/users', (req, res) => {
       })
       .catch(error => {
         res.status(500).json({ error: "There was an error while saving the user to the database." })
+      });
+  } else {
+    res.status(400).json({ message: "Please provide a name and bio for the user." });
+  }
+});
+
+server.put("/api/users/:id", (req, res) => {
+  const { name, bio } = req.body;
+  if (name && bio) {
+    db.update(req.params.id, { name: name, bio: bio })
+      .then(id => {
+        if (id) {
+          db.findById(id)
+            .then(user => {
+              res.status(200).json(user);
+            })
+            .catch(error => {
+              res.status(500).json({ error: "The user information could not be modified." });
+            });
+        } else {
+          res.status(404).json({ message: "The user with the specified ID does not exist." });
+        }
+      })
+      .catch(error => {
+        res.status(500).json({ error: "The user information could not be modified." });
       });
   } else {
     res.status(400).json({ message: "Please provide a name and bio for the user." });

@@ -34,7 +34,7 @@ server.get('/api/users', (req, res) => {
       if (users) {
         res.status(200).json(users);
       } else {
-        res.status(404).json({ message: 'There are no users in the database' });
+        res.status(404).json({ message: 'There are no users in the database.' });
       }
     })
     .catch(error => {
@@ -52,9 +52,24 @@ server.get('/api/users/:id', (req, res) => {
       }
     })
     .catch(error => {
-      res.status(500).json(error);
+      res.status(500).json({ error: "The user information could not be retrieved." });
     });
-})
+});
+
+server.post('/api/users', (req, res) => {
+  const { name, bio } = req.body;
+  if (name && bio) {
+    db.insert({ name: name, bio: bio })
+      .then(user => {
+        res.status(201).json(user);
+      })
+      .catch(error => {
+        res.status(500).json({ error: "There was an error while saving the user to the database." })
+      });
+  } else {
+    res.status(400).json({ message: "Please provide a name and bio for the user." });
+  }
+});
 
 //Start listening
 server.listen(port, () => {
